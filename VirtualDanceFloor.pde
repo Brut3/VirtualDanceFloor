@@ -28,6 +28,9 @@ ArrayList<Valo> valot; //kokoelma erilaisa valoja
 ArrayList<Valo> samatValot;
 Random noppa;
 
+ParticleSystem ps;
+PImage sprite;
+
 //----------------- KAMERA ---------------------
 
 int STAND_HEIGHT = 100;
@@ -67,11 +70,14 @@ void setup()
 
   //Ladataan wavefront-object-tiedosto
   model = new OBJModel(this, "olkkari.obj", "relative", TRIANGLES);
-
+  sprite = loadImage("sprite.png");
+  model.disableDebug();
   //Skaalataan malli sopivan kokoiseksi
   model.scale(100);
   //Siirretään malli keskelle koordinaatistoa
   model.translateToCenter();
+  
+  ps = new ParticleSystem(500);
 
   initMusic();
   
@@ -149,7 +155,9 @@ void initMusic() {
 void draw() {
 
   background(0);
+  if(frameCount % 10 == 0) {
   println(frameRate);
+  }
   translate(width/2, height/2, 0);
 
   if(!bileet) {
@@ -196,20 +204,24 @@ void draw() {
         j++;
       }
     }
-    //Strobo paalle 50 freimin valein
-    if(frameCount % 50 == 0) {
+    //Strobo paalle 80 freimin valein
+    if(frameCount % 80 == 0) {
       this.strobo = true;
     }
     //Strobo valkkyy 10 freimin ajan
-    if(this.strobo && strobolaskuri < 10) {
+    if(this.strobo && strobolaskuri < 20) {
       if(frameCount%2 == 0) {
-        pointLight(100, 100, 100, 160, 160, 100);
+        //pointLight(100, 100, 100, 160, 160, 100);
+        pushStyle();
+        emissive(200);
+      } else {
+        popStyle();
       }  
       strobolaskuri++;
     }
-    if(strobolaskuri >= 10) {
+    if(strobolaskuri >= 20) {
       this.strobo = false;
-      strobolaskuri = 0;
+      strobolaskuri = (int)random(5)*2;
     }
     // Waveform-efekti
     stroke(220, 0, 50);
@@ -219,6 +231,7 @@ void draw() {
       line(500, 50 + player.right.get(i)*80, i - 550, 500, 50 + player.right.get(i+1)*80, i - 549);
     }
     noStroke();
+    
   }
   // jos bileet ovat kaynnissa pallo laskee tiettyyn pisteeseen saakka
   if( bileet && diskopallo.y() < -100) {
@@ -257,9 +270,22 @@ void draw() {
   noFill();
   noStroke();
 
+  ps.update();
+  hint(DISABLE_DEPTH_SORT);
+  ps.display();
+  hint(ENABLE_DEPTH_SORT);
+  ps.setEmitter(0,0,0);
+
   paivitaKamera();
   paivitaKameranSijainti();
   camera(x, y, z, tx, ty, tz, 0, 1, 0);
+  pushStyle();
+  hint(DISABLE_DEPTH_TEST);
+  stroke(255);
+  fill(255);
+  text("fps: " + frameRate, 10, 20);
+  hint(ENABLE_DEPTH_TEST);
+  popStyle();
 }
 
 void stop()
