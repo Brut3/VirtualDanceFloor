@@ -194,6 +194,12 @@ void draw() {
       player.pause();
       musa = false;
     }
+    
+    //Test Saturday Night Fever -pose
+    if(saturdayNightFever()) {
+      println("#### SaturdayNightFever ####");
+      bileet = true;
+    }
   }
   if (bileet) {
     if(!musa) {
@@ -316,6 +322,7 @@ void draw() {
   hint(ENABLE_DEPTH_TEST);
   popStyle();
 }
+
 
 void drawLimb(int userId,int jointType1,int jointType2)
 {
@@ -501,6 +508,36 @@ void drawSkeleton(int userId)
   popStyle();  
 }
 
+
+// Saturday Night Fever: Right hand above head, left hand below hip
+boolean saturdayNightFever() {
+  int[] userList = context.getUsers();
+  PVector upperJointPos;
+  PVector lowerJointPos;
+  boolean poseAssumed = false;
+  for(int i=0;i<userList.length;i++)
+  {
+    if(context.isTrackingSkeleton(userList[i])) {
+      
+      // Right hand above head
+      context.getJointPositionSkeleton(userList[i],SimpleOpenNI.SKEL_RIGHT_HAND,upperJointPos);
+      context.getJointPositionSkeleton(userList[i],SimpleOpenNI.SKEL_HEAD,lowerJointPos);
+      // y-axis grows downwards
+      if(upperJointPos.y < lowerJointPos.y)
+        poseAssumed = true;
+        
+      // left hand below hip
+      context.getJointPositionSkeleton(userList[i],SimpleOpenNI.SKEL_LEFT_HAND,lowerJointPos);
+      context.getJointPositionSkeleton(userList[i],SimpleOpenNI.SKEL_LEFT_HIP,upperJointPos);
+      // y-axis grows downwards
+      if(upperJointPos.y > lowerJointPos.y)
+        poseAssumed = false;
+    }
+    if(poseAssumed)
+      return true;
+  }
+}
+
 // Handles the PUSH gesture
 void handlePush() {
   println(">> PUSH <<");
@@ -510,6 +547,21 @@ void handlePush() {
 void handleSwipe(String dir) {
   println("--- SWIPE: "+dir+" ---");
 }
+
+// session callbacks
+void onStartSession(PVector pos) {
+  println("onStartSession: " + pos);
+  context.removeGesture("Wave,Click");
+}
+void onEndSession() {
+  println("onEndSession: ");
+  context.addGesture("Wave,Click");
+}
+void onFocusSession(String strFocus, PVector pos, float progress) {
+  println("onFocusSession: focus=" + strFocus + ",pos=" + pos + ",progress=" + progress);
+}
+
+
 
 void onNewUser(int userId)
 {
