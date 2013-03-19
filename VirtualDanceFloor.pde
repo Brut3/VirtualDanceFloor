@@ -31,6 +31,13 @@ Random noppa;
 ParticleSystem ps;
 PImage sprite;
 
+
+//----------------- ELEET ---------------------
+PushDetector pushDetector;
+SwipeDetector swipeDetector;
+XnVSessionManager sessionManager;
+
+
 //----------------- KAMERA ---------------------
 
 int STAND_HEIGHT = 100;
@@ -92,6 +99,7 @@ void setup()
   moveRIGHT = false;
   
   initOpenNI();
+  initGestures();
 }
 
 void initOpenNI() {
@@ -106,6 +114,19 @@ void initOpenNI() {
   }
   context.setMirror(true);
   context.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL); 
+}
+
+void initGestures() {
+  context.enableHands();
+  context.enableGesture();
+  
+  sessionManager = context.createSessionManager("Click,Wave", "RaiseHand");
+  
+  pushDetector = new PushDetector(this);
+  sessionManager.AddListener(pushDetector);
+  
+  swipeDetector = new SwipeDetector(this);
+  sessionManager.AddListener(swipeDetector);
 }
 
 void initCamera() {
@@ -159,7 +180,7 @@ void draw() {
 
   background(0);
   if(frameCount % 10 == 0) {
-  println(frameRate);
+    println(frameRate);
   }
   translate(width/2, height/2, 0);
 
@@ -256,8 +277,10 @@ void draw() {
   //Piirretään olkkari
   model.draw();
 
-  // update the cam
+  // update context
   context.update();
+  // update session
+  context.update(sessionManager);
   
   // draw depthImageMap
   //image(context.depthImage(),0,0);
@@ -476,6 +499,16 @@ void drawSkeleton(int userId)
   drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_KNEE, SimpleOpenNI.SKEL_RIGHT_FOOT);
 
   popStyle();  
+}
+
+// Handles the PUSH gesture
+void handlePush() {
+  println(">> PUSH <<");
+}
+
+// Handles SWIPE gestures. @dir can be (up|down|left|right).
+void handleSwipe(String dir) {
+  println("--- SWIPE: "+dir+" ---");
 }
 
 void onNewUser(int userId)
