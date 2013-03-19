@@ -271,9 +271,9 @@ void draw() {
   noStroke();
 
   ps.update();
-  hint(DISABLE_DEPTH_SORT);
+  //hint(DISABLE_DEPTH_SORT);
   ps.display();
-  hint(ENABLE_DEPTH_SORT);
+  //hint(ENABLE_DEPTH_SORT);
   ps.setEmitter(0,0,0);
 
   paivitaKamera();
