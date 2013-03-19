@@ -84,6 +84,8 @@ void setup()
   moveDOWN = false;
   moveLEFT = false;
   moveRIGHT = false;
+  
+  initOpenNI();
 }
 
 void initOpenNI() {
@@ -96,6 +98,7 @@ void initOpenNI() {
      exit();
      return;
   }
+  context.setMirror(true);
   context.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL); 
 }
 
@@ -149,7 +152,6 @@ void initMusic() {
 void draw() {
 
   background(0);
-  println(frameRate);
   translate(width/2, height/2, 0);
 
   if(!bileet) {
@@ -236,23 +238,26 @@ void draw() {
 
   //Piirretään diskopallo
   diskopallo.piirraPallo();
+  
+  //Piirretään olkkari
+  model.draw();
 
   // update the cam
-  //context.update();
+  context.update();
   
   // draw depthImageMap
   //image(context.depthImage(),0,0);
   
+  translate(0, 80, -700);
+  scale(0.18);
   // draw the skeleton if it's available
-//  int[] userList = context.getUsers();
-//  for(int i=0;i<userList.length;i++)
-//  {
-//    if(context.isTrackingSkeleton(userList[i]))
-//      drawSkeleton(userList[i]);
-//  }  
-
-  //Piirretään olkkari
-  model.draw();
+  int[] userList = context.getUsers();
+  for(int i=0;i<userList.length;i++)
+  {
+    if(context.isTrackingSkeleton(userList[i]))
+      drawSkeleton(userList[i]);
+  }
+  scale(1);
 
   noFill();
   noStroke();
@@ -260,6 +265,21 @@ void draw() {
   paivitaKamera();
   paivitaKameranSijainti();
   camera(x, y, z, tx, ty, tz, 0, 1, 0);
+}
+
+void drawLimb(int userId,int jointType1,int jointType2)
+{
+  PVector jointPos1 = new PVector();
+  PVector jointPos2 = new PVector();
+  float  confidence;
+  
+  // draw the joint position
+  context.getJointPositionSkeleton(userId,jointType1,jointPos1);
+  context.getJointPositionSkeleton(userId,jointType2,jointPos2);
+
+  stroke(255,0,0);
+  line(jointPos1.x,-jointPos1.y,jointPos1.z,
+       jointPos2.x,-jointPos2.y,jointPos2.z);
 }
 
 void stop()
@@ -406,26 +426,27 @@ void drawSkeleton(int userId)
   strokeWeight(3);
   smooth();
   
-  context.drawLimb(userId, SimpleOpenNI.SKEL_HEAD, SimpleOpenNI.SKEL_NECK);
+  // to get the 3d joint data
+  drawLimb(userId, SimpleOpenNI.SKEL_HEAD, SimpleOpenNI.SKEL_NECK);
 
-  context.drawLimb(userId, SimpleOpenNI.SKEL_NECK, SimpleOpenNI.SKEL_LEFT_SHOULDER);
-  context.drawLimb(userId, SimpleOpenNI.SKEL_LEFT_SHOULDER, SimpleOpenNI.SKEL_LEFT_ELBOW);
-  context.drawLimb(userId, SimpleOpenNI.SKEL_LEFT_ELBOW, SimpleOpenNI.SKEL_LEFT_HAND);
+  drawLimb(userId, SimpleOpenNI.SKEL_NECK, SimpleOpenNI.SKEL_LEFT_SHOULDER);
+  drawLimb(userId, SimpleOpenNI.SKEL_LEFT_SHOULDER, SimpleOpenNI.SKEL_LEFT_ELBOW);
+  drawLimb(userId, SimpleOpenNI.SKEL_LEFT_ELBOW, SimpleOpenNI.SKEL_LEFT_HAND);
 
-  context.drawLimb(userId, SimpleOpenNI.SKEL_NECK, SimpleOpenNI.SKEL_RIGHT_SHOULDER);
-  context.drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_SHOULDER, SimpleOpenNI.SKEL_RIGHT_ELBOW);
-  context.drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_ELBOW, SimpleOpenNI.SKEL_RIGHT_HAND);
+  drawLimb(userId, SimpleOpenNI.SKEL_NECK, SimpleOpenNI.SKEL_RIGHT_SHOULDER);
+  drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_SHOULDER, SimpleOpenNI.SKEL_RIGHT_ELBOW);
+  drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_ELBOW, SimpleOpenNI.SKEL_RIGHT_HAND);
 
-  context.drawLimb(userId, SimpleOpenNI.SKEL_LEFT_SHOULDER, SimpleOpenNI.SKEL_TORSO);
-  context.drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_SHOULDER, SimpleOpenNI.SKEL_TORSO);
+  drawLimb(userId, SimpleOpenNI.SKEL_LEFT_SHOULDER, SimpleOpenNI.SKEL_TORSO);
+  drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_SHOULDER, SimpleOpenNI.SKEL_TORSO);
 
-  context.drawLimb(userId, SimpleOpenNI.SKEL_TORSO, SimpleOpenNI.SKEL_LEFT_HIP);
-  context.drawLimb(userId, SimpleOpenNI.SKEL_LEFT_HIP, SimpleOpenNI.SKEL_LEFT_KNEE);
-  context.drawLimb(userId, SimpleOpenNI.SKEL_LEFT_KNEE, SimpleOpenNI.SKEL_LEFT_FOOT);
+  drawLimb(userId, SimpleOpenNI.SKEL_TORSO, SimpleOpenNI.SKEL_LEFT_HIP);
+  drawLimb(userId, SimpleOpenNI.SKEL_LEFT_HIP, SimpleOpenNI.SKEL_LEFT_KNEE);
+  drawLimb(userId, SimpleOpenNI.SKEL_LEFT_KNEE, SimpleOpenNI.SKEL_LEFT_FOOT);
 
-  context.drawLimb(userId, SimpleOpenNI.SKEL_TORSO, SimpleOpenNI.SKEL_RIGHT_HIP);
-  context.drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_HIP, SimpleOpenNI.SKEL_RIGHT_KNEE);
-  context.drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_KNEE, SimpleOpenNI.SKEL_RIGHT_FOOT);
+  drawLimb(userId, SimpleOpenNI.SKEL_TORSO, SimpleOpenNI.SKEL_RIGHT_HIP);
+  drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_HIP, SimpleOpenNI.SKEL_RIGHT_KNEE);
+  drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_KNEE, SimpleOpenNI.SKEL_RIGHT_FOOT);
 
   popStyle();  
 }
