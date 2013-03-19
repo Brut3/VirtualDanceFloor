@@ -85,6 +85,8 @@ class Pallo {
     pushMatrix();
     translate(0, yT, 0); //Muutetaan pallon sijaintia y-akselilla
     rotateY(radians(this.kulma)); //Kierretään palloa haluttuun kulmaan
+    pushStyle();
+    emissive(150);
     beginShape(QUAD_STRIP);
     texture(teksturi);
     textureMode(NORMAL); 
@@ -96,6 +98,7 @@ class Pallo {
       }
     }
     endShape();
+    popStyle();
     popMatrix();
   }
   

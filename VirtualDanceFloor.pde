@@ -2,11 +2,13 @@
 //Olkkarissa voi liikkua hiiren ja nappaimiston avulla. Jos aika rupeaa kaymaan pitkaksi
 //kannattaa paina b-nappainta. 
 
-import processing.opengl.*; 
-import javax.media.opengl.GL;
 import saito.objloader.*;
 import java.util.Random;
 import ddf.minim.*;
+import SimpleOpenNI.*;
+
+SimpleOpenNI  context;
+boolean       autoCalib=true;
 
 AudioPlayer player; //musiikkisoitin
 AudioSnippet efekti; //efektisoitin
@@ -14,14 +16,10 @@ Minim minim; //minim-olio
 
 OBJModel model; //3d-malli
 
-//OpenGL muuttujat
-PGraphicsOpenGL pgl;
-GL gl;
-
 Pallo diskopallo; //diskopallo
 Valoefekti disko; //diskopallo-valoefekti
 
-boolean bileet; //onko bileet kaynnissa? ;)
+boolean bileet; //onko bileet kaynnissa?
 boolean musa; //soiko poppi
 boolean strobo; //välkkyykö strobo
 int strobolaskuri; //valkyntalaskuri
@@ -32,14 +30,12 @@ Random noppa;
 
 //----------------- KAMERA ---------------------
 
-//Vakiot
 int STAND_HEIGHT = 100;
 int MOVEMENT_SPEED = 50;
 float SENSITIVITY = 15;      //Suurempi arvo, hitaampi liike
 int STILL_BOX = 100;        
 int CAMERA_DISTANCE = 1000;
 
-//Muuttujat
 float x, y, z, ay; //Sijainti
 float tx, ty, tz; //Katsevektori
 float rotX, rotY; 
@@ -54,10 +50,8 @@ boolean moveUP, moveDOWN, moveLEFT, moveRIGHT;
 void setup()
 {
   size(800, 600, P3D);
-  
-
-  frameRate(24); //Rajoitetaan framerate 24
-
+  smooth(4);
+  frameRate(60);
   bileet = false;
   musa = false;
   strobo = false;
@@ -79,18 +73,48 @@ void setup()
   //Siirretään malli keskelle koordinaatistoa
   model.translateToCenter();
 
-//  //OPENGL hässäkkää
-//  pgl = (PGraphicsOpenGL) g;
-//  gl = pgl.beginGL();
-//  gl.glEnable(GL.GL_CULL_FACE); 
-//  gl.glCullFace(GL.GL_BACK); //Ei piirretä takatahkoja
-//  pgl.endGL();
+  initMusic();
+  
+  initLights();
+  
+  initCamera();
 
-  //Alustetaan musiikkisoitin
-  minim = new Minim(this); 
-  player = minim.loadFile("diskojytaa.mp3");
-  efekti = minim.loadSnippet("djscratch1.wav");
+  //Alustetaan liikkeflagit
+  moveUP = false;
+  moveDOWN = false;
+  moveLEFT = false;
+  moveRIGHT = false;
+}
 
+void initOpenNI() {
+   context = new SimpleOpenNI(this);
+  
+  // enable depthMap generation 
+  if(context.enableDepth() == false)
+  {
+     println("Can't open the depthMap, maybe the camera is not connected!"); 
+     exit();
+     return;
+  }
+  context.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL); 
+}
+
+void initCamera() {
+  x = width/2;
+  y = height/2;
+  ay-= STAND_HEIGHT;
+  z = (height/2.0) / tan(PI*60.0 / 360.0);
+  tx = width/2;
+  ty = height/2;
+  tz = 0;
+  rotX = 0;
+  rotY = 0;
+  xComp = tx - x;
+  zComp = tz - z;
+  angle = 0;
+}
+
+void initLights() {
   //Luodaan listat
   this.valot = new ArrayList();
   this.samatValot = new ArrayList();
@@ -114,26 +138,12 @@ void setup()
   valot.add(new Valo(200, 0, 200, 0, 100, 0, 0.8, -0.4, -1, PI/3, 120));
   valot.add(new Valo(0, 230, 150, 0, 100, 0, 0.8, -0.5, -0.9, PI/6, 300));
   valot.add(new Valo(200, 100, 200, 0, 100, 0, 0.8, -0.5, -0.9, PI/6, 300));
+}
 
-  //Alustetaan kameroa
-  x = width/2;
-  y = height/2;
-  ay-= STAND_HEIGHT;
-  z = (height/2.0) / tan(PI*60.0 / 360.0);
-  tx = width/2;
-  ty = height/2;
-  tz = 0;
-  rotX = 0;
-  rotY = 0;
-  xComp = tx - x;
-  zComp = tz - z;
-  angle = 0;
-
-  //Alustetaan liikkeflagit
-  moveUP = false;
-  moveDOWN = false;
-  moveLEFT = false;
-  moveRIGHT = false;
+void initMusic() {
+  minim = new Minim(this); 
+  player = minim.loadFile("diskojytaa.mp3");
+  efekti = minim.loadSnippet("djscratch1.wav");
 }
 
 void draw() {
@@ -226,6 +236,20 @@ void draw() {
 
   //Piirretään diskopallo
   diskopallo.piirraPallo();
+
+  // update the cam
+  //context.update();
+  
+  // draw depthImageMap
+  //image(context.depthImage(),0,0);
+  
+  // draw the skeleton if it's available
+//  int[] userList = context.getUsers();
+//  for(int i=0;i<userList.length;i++)
+//  {
+//    if(context.isTrackingSkeleton(userList[i]))
+//      drawSkeleton(userList[i]);
+//  }  
 
   //Piirretään olkkari
   model.draw();
@@ -372,4 +396,101 @@ public float korjaaKulma(float xc, float zc) {
   }
   return newAngle;
 }
+
+void drawSkeleton(int userId)
+{
+
+  pushStyle();
+  
+  stroke(0,0,255);
+  strokeWeight(3);
+  smooth();
+  
+  context.drawLimb(userId, SimpleOpenNI.SKEL_HEAD, SimpleOpenNI.SKEL_NECK);
+
+  context.drawLimb(userId, SimpleOpenNI.SKEL_NECK, SimpleOpenNI.SKEL_LEFT_SHOULDER);
+  context.drawLimb(userId, SimpleOpenNI.SKEL_LEFT_SHOULDER, SimpleOpenNI.SKEL_LEFT_ELBOW);
+  context.drawLimb(userId, SimpleOpenNI.SKEL_LEFT_ELBOW, SimpleOpenNI.SKEL_LEFT_HAND);
+
+  context.drawLimb(userId, SimpleOpenNI.SKEL_NECK, SimpleOpenNI.SKEL_RIGHT_SHOULDER);
+  context.drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_SHOULDER, SimpleOpenNI.SKEL_RIGHT_ELBOW);
+  context.drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_ELBOW, SimpleOpenNI.SKEL_RIGHT_HAND);
+
+  context.drawLimb(userId, SimpleOpenNI.SKEL_LEFT_SHOULDER, SimpleOpenNI.SKEL_TORSO);
+  context.drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_SHOULDER, SimpleOpenNI.SKEL_TORSO);
+
+  context.drawLimb(userId, SimpleOpenNI.SKEL_TORSO, SimpleOpenNI.SKEL_LEFT_HIP);
+  context.drawLimb(userId, SimpleOpenNI.SKEL_LEFT_HIP, SimpleOpenNI.SKEL_LEFT_KNEE);
+  context.drawLimb(userId, SimpleOpenNI.SKEL_LEFT_KNEE, SimpleOpenNI.SKEL_LEFT_FOOT);
+
+  context.drawLimb(userId, SimpleOpenNI.SKEL_TORSO, SimpleOpenNI.SKEL_RIGHT_HIP);
+  context.drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_HIP, SimpleOpenNI.SKEL_RIGHT_KNEE);
+  context.drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_KNEE, SimpleOpenNI.SKEL_RIGHT_FOOT);
+
+  popStyle();  
+}
+
+void onNewUser(int userId)
+{
+  println("onNewUser - userId: " + userId);
+  println("  start pose detection");
+  
+  if(autoCalib)
+    context.requestCalibrationSkeleton(userId,true);
+  else    
+    context.startPoseDetection("Psi",userId);
+}
+
+void onLostUser(int userId)
+{
+  println("onLostUser - userId: " + userId);
+}
+
+void onExitUser(int userId)
+{
+  println("onExitUser - userId: " + userId);
+}
+
+void onReEnterUser(int userId)
+{
+  println("onReEnterUser - userId: " + userId);
+}
+
+void onStartCalibration(int userId)
+{
+  println("onStartCalibration - userId: " + userId);
+}
+
+void onEndCalibration(int userId, boolean successfull)
+{
+  println("onEndCalibration - userId: " + userId + ", successfull: " + successfull);
+  
+  if (successfull) 
+  { 
+    println("  User calibrated !!!");
+    context.startTrackingSkeleton(userId); 
+  } 
+  else 
+  { 
+    println("  Failed to calibrate user !!!");
+    println("  Start pose detection");
+    context.startPoseDetection("Psi",userId);
+  }
+}
+
+void onStartPose(String pose,int userId)
+{
+  println("onStartPose - userId: " + userId + ", pose: " + pose);
+  println(" stop pose detection");
+  
+  context.stopPoseDetection(userId); 
+  context.requestCalibrationSkeleton(userId, true);
+ 
+}
+
+void onEndPose(String pose,int userId)
+{
+  println("onEndPose - userId: " + userId + ", pose: " + pose);
+}
+
 
