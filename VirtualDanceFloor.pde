@@ -247,23 +247,23 @@ void draw() {
       }
     }
     //Strobo paalle 80 freimin valein
-    if(frameCount % 80 == 0) {
-      this.strobo = true;
-    }
+//    if(frameCount % 80 == 0) {
+//      this.strobo = true;
+//    }
     //Strobo valkkyy 10 freimin ajan
     if(this.strobo && strobolaskuri < 20) {
       if(frameCount%2 == 0) {
         //pointLight(100, 100, 100, 160, 160, 100);
-        pushStyle();
         emissive(200);
       } else {
-        popStyle();
+        emissive(0);
       }  
       strobolaskuri++;
     }
     if(strobolaskuri >= 20) {
       this.strobo = false;
       strobolaskuri = (int)random(5)*2;
+      emissive(0);
     }
     // Waveform-efekti
     stroke(220, 0, 50);
@@ -559,6 +559,7 @@ boolean saturdayNightFever() {
 // Handles the PUSH gesture
 void handlePush() {
   println(">> PUSH <<");
+  strobo = true;
 }
 
 // Handles SWIPE gestures. @dir can be (up|down|left|right).
