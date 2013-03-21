@@ -37,7 +37,6 @@ PImage sprite;
 
 //----------------- ELEET ---------------------
 PushDetector pushDetector;
-SwipeDetector swipeDetector;
 XnVSessionManager sessionManager;
 
 
@@ -131,8 +130,6 @@ void initGestures() {
   pushDetector = new PushDetector(this);
   sessionManager.AddListener(pushDetector);
   
-  swipeDetector = new SwipeDetector(this);
-  sessionManager.AddListener(swipeDetector);
 }
 
 void initCamera() {
