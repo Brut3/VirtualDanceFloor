@@ -1,17 +1,17 @@
   class Particle {
   
   PVector velocity;
-  float lifespan = 255;
+  float lifespan = 100;
   
   PShape part;
   float partSize;
   color[] part_colors = {color(255,0,0), color(0,255,0), color(0,0,255), color(0,0,255)};
   color part_color;
   
-  PVector gravity = new PVector(0,0.1);
+  PVector gravity = new PVector(0,0.3);
 
   public Particle() {
-    partSize = random(2,20);
+    partSize = random(20,200);
     part_color = part_colors[(int)random(3)];
     PShape part1 = createShape();
     part1.beginShape(QUAD);
