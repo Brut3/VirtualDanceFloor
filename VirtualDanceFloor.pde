@@ -125,7 +125,7 @@ void initOpenNI() {
 void initGestures() {
   context.enableHands();
   context.enableGesture();
-  
+  context.addGesture("Wave");
   sessionManager = context.createSessionManager("", "");
   
   snfDetector = new SaturdayNightFeverDetector();
@@ -537,17 +537,8 @@ void handlePush() {
   strobo = true;
 }
 
-void onProgressGesture(String strGesture, PVector position, float progress)
-{
-  println("onProgressGesture - strGesture: " + strGesture + 
-    ", position: " + position + ", progress:" + progress);
-}
-
 void onRecognizeGesture(String strGesture, PVector idPosition, PVector endPosition)
-{
-  println("onRecognizeGesture - strGesture: " + strGesture + 
-    ", idPosition: " + idPosition + ", endPosition:" + endPosition);
-    
+{   
   if (strGesture.equals("Wave")) {
     println("--------------------------------------------WAVE");
   }
