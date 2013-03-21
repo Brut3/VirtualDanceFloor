@@ -10,6 +10,9 @@ import SimpleOpenNI.*;
 SimpleOpenNI  context;
 boolean       autoCalib=true;
 
+PVector handPos = new PVector();
+PVector handPos2 = new PVector();
+
 AudioPlayer player; //musiikkisoitin
 AudioSnippet efekti; //efektisoitin
 Minim minim; //minim-olio
@@ -28,7 +31,7 @@ ArrayList<Valo> valot; //kokoelma erilaisa valoja
 ArrayList<Valo> samatValot;
 Random noppa;
 
-ParticleSystem ps;
+ParticleSystem ps, ps2;
 PImage sprite;
 
 //----------------- KAMERA ---------------------
@@ -77,7 +80,8 @@ void setup()
   //Siirretään malli keskelle koordinaatistoa
   model.translateToCenter();
   
-  ps = new ParticleSystem(500);
+  ps = new ParticleSystem(300);
+  ps2 = new ParticleSystem(300);
 
   initMusic();
   
@@ -262,36 +266,40 @@ void draw() {
   // draw depthImageMap
   //image(context.depthImage(),0,0);
   
+  pushMatrix();
   translate(0, 80, -700);
   scale(0.18);
+  
   // draw the skeleton if it's available
   int[] userList = context.getUsers();
   for(int i=0;i<userList.length;i++)
   {
-    if(context.isTrackingSkeleton(userList[i]))
+    if(context.isTrackingSkeleton(userList[i])) {
+      context.getJointPositionSkeleton(userList[i], SimpleOpenNI.SKEL_RIGHT_HAND, handPos);
+      context.getJointPositionSkeleton(userList[i], SimpleOpenNI.SKEL_LEFT_HAND, handPos2);
+      println(handPos.x + " " + handPos.y + " " + handPos.z);
       drawSkeleton(userList[i]);
+       
+      ps.setEmitter(handPos.x, -handPos.y, handPos.z);
+      ps.update();     
+      ps.display();
+      
+      ps2.setEmitter(handPos2.x, -handPos2.y, handPos2.z);
+      ps2.update();     
+      ps2.display();
+    }
+    
   }
-  scale(1);
-
+  popMatrix();
   noFill();
   noStroke();
+  
 
-  ps.update();
-  //hint(DISABLE_DEPTH_SORT);
-  ps.display();
-  //hint(ENABLE_DEPTH_SORT);
-  ps.setEmitter(0,0,0);
+  
 
-  paivitaKamera();
+  //paivitaKamera();
   paivitaKameranSijainti();
   camera(x, y, z, tx, ty, tz, 0, 1, 0);
-  pushStyle();
-  hint(DISABLE_DEPTH_TEST);
-  stroke(255);
-  fill(255);
-  text("fps: " + frameRate, 10, 20);
-  hint(ENABLE_DEPTH_TEST);
-  popStyle();
 }
 
 void drawLimb(int userId,int jointType1,int jointType2)
