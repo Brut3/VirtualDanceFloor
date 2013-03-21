@@ -57,6 +57,8 @@ boolean moveUP, moveDOWN, moveLEFT, moveRIGHT;
 
 //------------------------------------------------
 
+color[] _colors = {color(255,255,0), color(255,0,255), color(0,255,255)};
+
 void setup()
 {
   size(800, 600, P3D);
@@ -179,7 +181,7 @@ void initMusic() {
 void draw() {
 
   background(0);
-  if(frameCount % 10 == 0) {
+  if(frameCount % 100 == 0) {
     println(frameRate);
   }
   translate(width/2, height/2, 0);
@@ -333,7 +335,7 @@ void drawLimb(int userId,int jointType1,int jointType2)
   context.getJointPositionSkeleton(userId,jointType1,jointPos1);
   context.getJointPositionSkeleton(userId,jointType2,jointPos2);
 
-  stroke(255,0,0);
+  //stroke(255,0,0);
   line(jointPos1.x,-jointPos1.y,jointPos1.z,
        jointPos2.x,-jointPos2.y,jointPos2.z);
 }
@@ -478,7 +480,8 @@ void drawSkeleton(int userId)
 
   pushStyle();
   
-  stroke(0,0,255);
+  // different users are of different colors
+  stroke(_colors[userId % _colors.length]);
   strokeWeight(3);
   smooth();
   
@@ -521,7 +524,6 @@ boolean saturdayNightFever() {
       // Right hand above head
       context.getJointPositionSkeleton(userList[i],SimpleOpenNI.SKEL_RIGHT_HAND,upperJointPos);
       context.getJointPositionSkeleton(userList[i],SimpleOpenNI.SKEL_HEAD,lowerJointPos);
-      // y-axis grows downwards
       if(upperJointPos.y > lowerJointPos.y)
         poseAssumed = true;
         
