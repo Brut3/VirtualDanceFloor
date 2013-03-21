@@ -200,8 +200,7 @@ void draw() {
       println("#### SaturdayNightFever ####");
       bileet = true;
     }
-  }
-  if (bileet) {
+  } else {
     if(!musa) {
       efekti.rewind(); //Kelataan efekti alkuun
       efekti.play(); //Soitetaan efekti ennen musiikin alkamista
