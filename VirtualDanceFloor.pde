@@ -32,6 +32,7 @@ ArrayList<Valo> samatValot;
 Random noppa;
 
 ParticleSystem ps, ps2;
+boolean psDisplayed;
 PImage sprite;
 
 
@@ -91,6 +92,7 @@ void setup()
   
   ps = new ParticleSystem(300);
   ps2 = new ParticleSystem(300);
+  psDisplayed = false;
 
   initMusic();
   
@@ -200,6 +202,8 @@ void draw() {
       player.pause();
       musa = false;
     }
+    
+    if(psDisplayed) psDisplayed = false;
     
     //Test Saturday Night Fever -pose
     if(snfDetector.saturdayNightFever()) {
@@ -318,13 +322,15 @@ void draw() {
       
       drawSkeleton(userList[i]);
        
-      ps.setEmitter(handPos.x, -handPos.y, handPos.z);
-      ps.update();     
-      ps.display();
-      
-      ps2.setEmitter(handPos2.x, -handPos2.y, handPos2.z);
-      ps2.update();     
-      ps2.display();
+      if (psDisplayed) {
+        ps.setEmitter(handPos.x, -handPos.y, handPos.z);
+        ps.update();     
+        ps.display();
+        
+        ps2.setEmitter(handPos2.x, -handPos2.y, handPos2.z);
+        ps2.update();     
+        ps2.display();
+      }
     }
     
   }
@@ -360,6 +366,7 @@ void drawBody(int userId) {
   pushMatrix();
   PVector torsoPos = new PVector();
   PVector headPos = new PVector();
+  PVector neckPos = new PVector();
   PVector leftHandPos = new PVector();
   PVector rightHandPos = new PVector();
   PVector leftFootPos = new PVector();
@@ -370,6 +377,7 @@ void drawBody(int userId) {
   // draw the joint position
   context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_TORSO,torsoPos);
   context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_HEAD,headPos);
+  context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_NECK,neckPos);
   context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_LEFT_HAND,leftHandPos);
   context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_RIGHT_HAND,rightHandPos);
   context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_LEFT_FOOT,leftFootPos);
@@ -595,6 +603,9 @@ void onRecognizeGesture(String strGesture, PVector idPosition, PVector endPositi
     
   if (strGesture.equals("Wave")) {
     println("--------------------------------------------WAVE");
+    if (!psDisplayed) psDisplayed = true;
+    ps.changeColor();
+    ps2.changeColor();
   }
 }
 
