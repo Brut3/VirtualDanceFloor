@@ -126,7 +126,7 @@ void initGestures() {
   context.enableHands();
   context.enableGesture();
   
-  sessionManager = context.createSessionManager("Click,Wave", "RaiseHand");
+  sessionManager = context.createSessionManager("Wave", "");
   
   snfDetector = new SaturdayNightFeverDetector();
   staticGesture = new StaticGestureDetector();
@@ -561,19 +561,14 @@ void handlePush() {
   println(">> PUSH <<");
 }
 
-// Handles SWIPE gestures. @dir can be (up|down|left|right).
-void handleSwipe(String dir) {
-  println("--- SWIPE: "+dir+" ---");
-}
-
 // session callbacks
 void onStartSession(PVector pos) {
   println("onStartSession: " + pos);
-  context.removeGesture("Wave,Click");
+  context.removeGesture("Click");
 }
 void onEndSession() {
   println("onEndSession: ");
-  context.addGesture("Wave,Click");
+  //context.addGesture("Click");
 }
 void onFocusSession(String strFocus, PVector pos, float progress) {
   println("onFocusSession: focus=" + strFocus + ",pos=" + pos + ",progress=" + progress);
