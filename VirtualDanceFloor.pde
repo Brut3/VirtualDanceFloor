@@ -523,14 +523,14 @@ boolean saturdayNightFever() {
       context.getJointPositionSkeleton(userList[i],SimpleOpenNI.SKEL_RIGHT_HAND,upperJointPos);
       context.getJointPositionSkeleton(userList[i],SimpleOpenNI.SKEL_HEAD,lowerJointPos);
       // y-axis grows downwards
-      if(upperJointPos.y < lowerJointPos.y)
+      if(upperJointPos.y > lowerJointPos.y)
         poseAssumed = true;
         
       // left hand below hip
       context.getJointPositionSkeleton(userList[i],SimpleOpenNI.SKEL_LEFT_HAND,lowerJointPos);
       context.getJointPositionSkeleton(userList[i],SimpleOpenNI.SKEL_LEFT_HIP,upperJointPos);
       // y-axis grows downwards
-      if(upperJointPos.y > lowerJointPos.y)
+      if(upperJointPos.y < lowerJointPos.y)
         poseAssumed = false;
     }
     if(poseAssumed)
