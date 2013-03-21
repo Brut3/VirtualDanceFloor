@@ -34,6 +34,13 @@ Random noppa;
 ParticleSystem ps, ps2;
 PImage sprite;
 
+
+//----------------- ELEET ---------------------
+PushDetector pushDetector;
+SwipeDetector swipeDetector;
+XnVSessionManager sessionManager;
+
+
 //----------------- KAMERA ---------------------
 
 int STAND_HEIGHT = 100;
@@ -96,6 +103,7 @@ void setup()
   moveRIGHT = false;
   
   initOpenNI();
+  initGestures();
 }
 
 void initOpenNI() {
@@ -110,6 +118,19 @@ void initOpenNI() {
   }
   context.setMirror(true);
   context.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL); 
+}
+
+void initGestures() {
+  context.enableHands();
+  context.enableGesture();
+  
+  sessionManager = context.createSessionManager("Click,Wave", "RaiseHand");
+  
+  pushDetector = new PushDetector(this);
+  sessionManager.AddListener(pushDetector);
+  
+  swipeDetector = new SwipeDetector(this);
+  sessionManager.AddListener(swipeDetector);
 }
 
 void initCamera() {
@@ -163,7 +184,7 @@ void draw() {
 
   background(0);
   if(frameCount % 10 == 0) {
-  println(frameRate);
+    println(frameRate);
   }
   translate(width/2, height/2, 0);
 
@@ -177,8 +198,13 @@ void draw() {
       player.pause();
       musa = false;
     }
-  }
-  if (bileet) {
+    
+    //Test Saturday Night Fever -pose
+    if(saturdayNightFever()) {
+      println("#### SaturdayNightFever ####");
+      bileet = true;
+    }
+  } else {
     if(!musa) {
       efekti.rewind(); //Kelataan efekti alkuun
       efekti.play(); //Soitetaan efekti ennen musiikin alkamista
@@ -260,8 +286,10 @@ void draw() {
   //Piirretään olkkari
   model.draw();
 
-  // update the cam
+  // update context
   context.update();
+  // update session
+  context.update(sessionManager);
   
   // draw depthImageMap
   //image(context.depthImage(),0,0);
@@ -301,6 +329,7 @@ void draw() {
   paivitaKameranSijainti();
   camera(x, y, z, tx, ty, tz, 0, 1, 0);
 }
+
 
 void drawLimb(int userId,int jointType1,int jointType2)
 {
@@ -485,6 +514,62 @@ void drawSkeleton(int userId)
 
   popStyle();  
 }
+
+
+// Saturday Night Fever: Right hand above head, left hand below hip
+boolean saturdayNightFever() {
+  int[] userList = context.getUsers();
+  PVector upperJointPos = new PVector();
+  PVector lowerJointPos = new PVector();
+  boolean poseAssumed = false;
+  for(int i=0;i<userList.length;i++)
+  {
+    if(context.isTrackingSkeleton(userList[i])) {
+      
+      // Right hand above head
+      context.getJointPositionSkeleton(userList[i],SimpleOpenNI.SKEL_RIGHT_HAND,upperJointPos);
+      context.getJointPositionSkeleton(userList[i],SimpleOpenNI.SKEL_HEAD,lowerJointPos);
+      // y-axis grows downwards
+      if(upperJointPos.y > lowerJointPos.y)
+        poseAssumed = true;
+        
+      // left hand below hip
+      context.getJointPositionSkeleton(userList[i],SimpleOpenNI.SKEL_LEFT_HAND,lowerJointPos);
+      context.getJointPositionSkeleton(userList[i],SimpleOpenNI.SKEL_LEFT_HIP,upperJointPos);
+      // y-axis grows downwards
+      if(upperJointPos.y < lowerJointPos.y)
+        poseAssumed = false;
+    }
+    if(poseAssumed)
+      return true;
+  }
+  return false;
+}
+
+// Handles the PUSH gesture
+void handlePush() {
+  println(">> PUSH <<");
+}
+
+// Handles SWIPE gestures. @dir can be (up|down|left|right).
+void handleSwipe(String dir) {
+  println("--- SWIPE: "+dir+" ---");
+}
+
+// session callbacks
+void onStartSession(PVector pos) {
+  println("onStartSession: " + pos);
+  context.removeGesture("Wave,Click");
+}
+void onEndSession() {
+  println("onEndSession: ");
+  context.addGesture("Wave,Click");
+}
+void onFocusSession(String strFocus, PVector pos, float progress) {
+  println("onFocusSession: focus=" + strFocus + ",pos=" + pos + ",progress=" + progress);
+}
+
+
 
 void onNewUser(int userId)
 {
