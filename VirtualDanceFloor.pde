@@ -126,7 +126,7 @@ void initGestures() {
   context.enableHands();
   context.enableGesture();
   
-  sessionManager = context.createSessionManager("Wave", "");
+  sessionManager = context.createSessionManager("", "");
   
   snfDetector = new SaturdayNightFeverDetector();
   staticGesture = new StaticGestureDetector();
@@ -558,39 +558,13 @@ void drawSkeleton(int userId)
   drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_HIP, SimpleOpenNI.SKEL_RIGHT_KNEE);
   drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_KNEE, SimpleOpenNI.SKEL_RIGHT_FOOT);
   
+  drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_SHOULDER, SimpleOpenNI.SKEL_RIGHT_HIP);
+  drawLimb(userId, SimpleOpenNI.SKEL_LEFT_SHOULDER, SimpleOpenNI.SKEL_LEFT_HIP);
+  drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_HIP, SimpleOpenNI.SKEL_LEFT_HIP);
+  
   drawBody(userId);
-
+  
   popStyle();  
-}
-
-
-// Saturday Night Fever: Right hand above head, left hand below hip
-boolean saturdayNightFever() {
-  int[] userList = context.getUsers();
-  PVector upperJointPos = new PVector();
-  PVector lowerJointPos = new PVector();
-  boolean poseAssumed = false;
-  for(int i=0;i<userList.length;i++)
-  {
-    if(context.isTrackingSkeleton(userList[i])) {
-      
-      // Right hand above head
-      context.getJointPositionSkeleton(userList[i],SimpleOpenNI.SKEL_RIGHT_HAND,upperJointPos);
-      context.getJointPositionSkeleton(userList[i],SimpleOpenNI.SKEL_HEAD,lowerJointPos);
-      if(upperJointPos.y > lowerJointPos.y)
-        poseAssumed = true;
-        
-      // left hand below hip
-      context.getJointPositionSkeleton(userList[i],SimpleOpenNI.SKEL_LEFT_HAND,lowerJointPos);
-      context.getJointPositionSkeleton(userList[i],SimpleOpenNI.SKEL_LEFT_HIP,upperJointPos);
-      // y-axis grows downwards
-      if(upperJointPos.y < lowerJointPos.y)
-        poseAssumed = false;
-    }
-    if(poseAssumed)
-      return true;
-  }
-  return false;
 }
 
 // Handles the PUSH gesture
@@ -599,10 +573,26 @@ void handlePush() {
   strobo = true;
 }
 
+void onProgressGesture(String strGesture, PVector position, float progress)
+{
+  println("onProgressGesture - strGesture: " + strGesture + 
+    ", position: " + position + ", progress:" + progress);
+}
+
+void onRecognizeGesture(String strGesture, PVector idPosition, PVector endPosition)
+{
+  println("onRecognizeGesture - strGesture: " + strGesture + 
+    ", idPosition: " + idPosition + ", endPosition:" + endPosition);
+    
+  if (strGesture.equals("Wave")) {
+    println("--------------------------------------------WAVE");
+  }
+}
+
 // session callbacks
 void onStartSession(PVector pos) {
   println("onStartSession: " + pos);
-  context.removeGesture("Click");
+  //context.removeGesture("Click");
 }
 void onEndSession() {
   println("onEndSession: ");
