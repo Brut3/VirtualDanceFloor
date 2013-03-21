@@ -304,7 +304,7 @@ void draw() {
   //image(context.depthImage(),0,0);
   
   pushMatrix();
-  translate(0, 80, 300);
+  translate(0, 120, 300);
   rotateY(PI);
   scale(0.18);
   
@@ -375,19 +375,28 @@ void drawBody(int userId) {
   context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_LEFT_FOOT,leftFootPos);
   context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_RIGHT_FOOT,rightFootPos);
 
-  translate(torsoPos.x, torsoPos.y, torsoPos.z);
-  sphere(50);
-  translate(headPos.x, headPos.y, headPos.z);
-  sphere(30);
+  pushMatrix();
+  int headX = (int)((headPos.x + neckPos.x)/2);
+  int headY = (int)((headPos.y + neckPos.y)/2);
+  int headZ = (int)((headPos.z + neckPos.z)/2); 
+  translate(headX, headY, headZ);
+  sphere(100);
+  popMatrix();
+  pushMatrix();
   translate(leftHandPos.x, leftHandPos.y, leftHandPos.z);
-  sphere(20);
+  sphere(60);
+  popMatrix();
+  pushMatrix();
   translate(rightHandPos.x, rightHandPos.y, rightHandPos.z);
-  sphere(20);
+  sphere(60);
+  popMatrix();
+  pushMatrix();
   translate(leftFootPos.x, leftFootPos.y, leftFootPos.z);
-  sphere(20);
+  sphere(60);
+  popMatrix();
+  pushMatrix();
   translate(rightFootPos.x, rightFootPos.y, rightFootPos.z);
-  sphere(20);
-  
+  sphere(60);
   popMatrix();
 }
 
