@@ -512,8 +512,8 @@ void drawSkeleton(int userId)
 // Saturday Night Fever: Right hand above head, left hand below hip
 boolean saturdayNightFever() {
   int[] userList = context.getUsers();
-  PVector upperJointPos;
-  PVector lowerJointPos;
+  PVector upperJointPos = new PVector();
+  PVector lowerJointPos = new PVector();
   boolean poseAssumed = false;
   for(int i=0;i<userList.length;i++)
   {
@@ -536,6 +536,7 @@ boolean saturdayNightFever() {
     if(poseAssumed)
       return true;
   }
+  return false;
 }
 
 // Handles the PUSH gesture
