@@ -307,7 +307,7 @@ void draw() {
     if(context.isTrackingSkeleton(userList[i])) {
       context.getJointPositionSkeleton(userList[i], SimpleOpenNI.SKEL_RIGHT_HAND, handPos);
       context.getJointPositionSkeleton(userList[i], SimpleOpenNI.SKEL_LEFT_HAND, handPos2);
-      println(handPos.x + " " + handPos.y + " " + handPos.z);
+      //println(handPos.x + " " + handPos.y + " " + handPos.z);
       drawSkeleton(userList[i]);
        
       ps.setEmitter(handPos.x, -handPos.y, handPos.z);
