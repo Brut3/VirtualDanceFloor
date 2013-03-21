@@ -40,6 +40,7 @@ PushDetector pushDetector;
 XnVSessionManager sessionManager;
 StaticGestureDetector staticGesture;
 SaturdayNightFeverDetector snfDetector;
+HadoukenDetector hadDetector;
 
 //----------------- KAMERA ---------------------
 
@@ -64,7 +65,7 @@ color[] _colors = {color(255,255,0), color(255,0,255), color(0,255,255)};
 
 void setup()
 {
-  size(800, 600, P3D);
+  size(1024, 768, P3D);
   smooth(4);
   frameRate(60);
   bileet = false;
@@ -128,6 +129,7 @@ void initGestures() {
   context.addGesture("Wave");
   sessionManager = context.createSessionManager("", "");
   
+  hadDetector = new HadoukenDetector();
   snfDetector = new SaturdayNightFeverDetector();
   staticGesture = new StaticGestureDetector();
   pushDetector = new PushDetector(this);
@@ -214,6 +216,12 @@ void draw() {
       bileet = false;
     }
     
+    if(hadDetector.detect()) {
+      strobo = true;
+    } else {
+      strobo = false;
+    }
+    
     if(!musa) {
       efekti.rewind(); //Kelataan efekti alkuun
       efekti.play(); //Soitetaan efekti ennen musiikin alkamista
@@ -246,19 +254,16 @@ void draw() {
         j++;
       }
     }
-    //Strobo paalle 80 freimin valein
-//    if(frameCount % 80 == 0) {
-//      this.strobo = true;
-//    }
+
     //Strobo valkkyy 10 freimin ajan
-    if(this.strobo && strobolaskuri < 20) {
+    if(this.strobo) {
       if(frameCount%2 == 0) {
-        //pointLight(100, 100, 100, 160, 160, 100);
         emissive(200);
       } else {
         emissive(0);
       }  
-      strobolaskuri++;
+    } else {
+      emissive(0);
     }
     if(strobolaskuri >= 20) {
       this.strobo = false;
@@ -357,7 +362,6 @@ void drawLimb(int userId,int jointType1,int jointType2)
 }
 
 void drawBody(int userId) {
-  pushMatrix();
   PVector torsoPos = new PVector();
   PVector headPos = new PVector();
   PVector leftHandPos = new PVector();
@@ -374,21 +378,35 @@ void drawBody(int userId) {
   context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_RIGHT_HAND,rightHandPos);
   context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_LEFT_FOOT,leftFootPos);
   context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_RIGHT_FOOT,rightFootPos);
-
-  translate(torsoPos.x, torsoPos.y, torsoPos.z);
-  sphere(50);
-  translate(headPos.x, headPos.y, headPos.z);
-  sphere(30);
-  translate(leftHandPos.x, leftHandPos.y, leftHandPos.z);
-  sphere(20);
-  translate(rightHandPos.x, rightHandPos.y, rightHandPos.z);
-  sphere(20);
-  translate(leftFootPos.x, leftFootPos.y, leftFootPos.z);
-  sphere(20);
-  translate(rightFootPos.x, rightFootPos.y, rightFootPos.z);
-  sphere(20);
   
+  pushStyle();
+  fill(0);
+  emissive(_colors[userId % _colors.length]);
+  noStroke();
+  
+  pushMatrix();
+  translate(headPos.x, -headPos.y, headPos.z);
+  sphere(100);
   popMatrix();
+  pushMatrix();
+  
+  translate(leftHandPos.x, -leftHandPos.y, leftHandPos.z);
+  sphere(60);
+  popMatrix();
+  pushMatrix();
+  translate(rightHandPos.x, -rightHandPos.y, rightHandPos.z);
+  sphere(60);
+  popMatrix();
+  pushMatrix();
+  translate(leftFootPos.x, -leftFootPos.y, leftFootPos.z);
+  sphere(60);
+  popMatrix();
+  pushMatrix();
+  translate(rightFootPos.x, -rightFootPos.y, rightFootPos.z);
+  sphere(60);
+  popMatrix();
+  
+  popStyle();
 }
 
 void stop()
@@ -577,6 +595,8 @@ void onRecognizeGesture(String strGesture, PVector idPosition, PVector endPositi
 {   
   if (strGesture.equals("Wave")) {
     println("--------------------------------------------WAVE");
+  } else if (strGesture.equals("Click")) {
+    handlePush();
   }
 }
 
