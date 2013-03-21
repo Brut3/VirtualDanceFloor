@@ -27,6 +27,12 @@ class ParticleSystem {
       }
     }
   }
+  
+  public void changeColor() {
+    for (Particle p : particles) {
+      p.changeColor();
+    }
+  }
 
   void display() {
 

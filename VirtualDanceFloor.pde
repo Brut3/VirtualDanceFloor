@@ -32,6 +32,7 @@ ArrayList<Valo> samatValot;
 Random noppa;
 
 ParticleSystem ps, ps2;
+boolean psDisplayed;
 PImage sprite;
 
 
@@ -65,7 +66,7 @@ color[] _colors = {color(255,255,0), color(255,0,255), color(0,255,255)};
 
 void setup()
 {
-  size(1024, 768, P3D);
+  size(800, 600, P3D);
   smooth(4);
   frameRate(60);
   bileet = false;
@@ -92,6 +93,7 @@ void setup()
   
   ps = new ParticleSystem(300);
   ps2 = new ParticleSystem(300);
+  psDisplayed = true;
 
   initMusic();
   
@@ -203,6 +205,8 @@ void draw() {
       musa = false;
     }
     
+    if(psDisplayed) psDisplayed = true;
+    
     //Test Saturday Night Fever -pose
     if(snfDetector.saturdayNightFever()) {
       println("#### SaturdayNightFever ####");
@@ -309,7 +313,7 @@ void draw() {
   //image(context.depthImage(),0,0);
   
   pushMatrix();
-  translate(0, 80, 300);
+  translate(0, 0, 300);
   rotateY(PI);
   scale(0.18);
   
@@ -323,13 +327,15 @@ void draw() {
       
       drawSkeleton(userList[i]);
        
-      ps.setEmitter(handPos.x, -handPos.y, handPos.z);
-      ps.update();     
-      ps.display();
-      
-      ps2.setEmitter(handPos2.x, -handPos2.y, handPos2.z);
-      ps2.update();     
-      ps2.display();
+      if (psDisplayed) {
+        ps.setEmitter(handPos.x, -handPos.y, handPos.z);
+        ps.update();     
+        ps.display();
+        
+        ps2.setEmitter(handPos2.x, -handPos2.y, handPos2.z);
+        ps2.update();     
+        ps2.display();
+      }
     }
     
   }
@@ -364,6 +370,7 @@ void drawLimb(int userId,int jointType1,int jointType2)
 void drawBody(int userId) {
   PVector torsoPos = new PVector();
   PVector headPos = new PVector();
+  PVector neckPos = new PVector();
   PVector leftHandPos = new PVector();
   PVector rightHandPos = new PVector();
   PVector leftFootPos = new PVector();
@@ -374,22 +381,21 @@ void drawBody(int userId) {
   // draw the joint position
   context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_TORSO,torsoPos);
   context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_HEAD,headPos);
+  context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_NECK,neckPos);
   context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_LEFT_HAND,leftHandPos);
   context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_RIGHT_HAND,rightHandPos);
   context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_LEFT_FOOT,leftFootPos);
   context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_RIGHT_FOOT,rightFootPos);
-  
-  pushStyle();
-  fill(0);
-  emissive(_colors[userId % _colors.length]);
-  noStroke();
-  
+
   pushMatrix();
-  translate(headPos.x, -headPos.y, headPos.z);
+  //int headX = (int)((headPos.x + neckPos.x)/2);
+  //int headY = (int)((headPos.y + neckPos.y)/2);
+  //int headZ = (int)((headPos.z + neckPos.z)/2); 
+  PVector headSpherePos = PVector.lerp(headPos,neckPos, .2);
+  translate(headSpherePos.x, -headSpherePos.y, headSpherePos.z);
   sphere(100);
   popMatrix();
   pushMatrix();
-  
   translate(leftHandPos.x, -leftHandPos.y, leftHandPos.z);
   sphere(60);
   popMatrix();
@@ -405,8 +411,6 @@ void drawBody(int userId) {
   translate(rightFootPos.x, -rightFootPos.y, rightFootPos.z);
   sphere(60);
   popMatrix();
-  
-  popStyle();
 }
 
 void stop()
@@ -552,7 +556,6 @@ void drawSkeleton(int userId)
   // different users are of different colors
   stroke(_colors[userId % _colors.length]);
   strokeWeight(3);
-  smooth();
   
   // to get the 3d joint data
   drawLimb(userId, SimpleOpenNI.SKEL_HEAD, SimpleOpenNI.SKEL_NECK);
@@ -594,9 +597,10 @@ void handlePush() {
 void onRecognizeGesture(String strGesture, PVector idPosition, PVector endPosition)
 {   
   if (strGesture.equals("Wave")) {
-    println("--------------------------------------------WAVE");
-  } else if (strGesture.equals("Click")) {
-    handlePush();
+    print("WAVE");
+    if (!psDisplayed) psDisplayed = true;
+    ps.changeColor();
+    ps2.changeColor();
   }
 }
 

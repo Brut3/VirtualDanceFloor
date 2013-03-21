@@ -6,19 +6,19 @@
   PShape part;
   float partSize;
   color[] part_colors = {color(255,0,0), color(0,255,0), color(0,0,255), color(0,0,255)};
-  color part_color;
+  color part_color_id;
   
   PVector gravity = new PVector(0,0.3);
 
   public Particle() {
     partSize = random(20,200);
-    part_color = part_colors[(int)random(3)];
+    part_color_id = 0;
     PShape part1 = createShape();
     part1.beginShape(QUAD);
     part1.noStroke();
     part1.texture(sprite);
     part1.fill(0);
-    part1.emissive(part_color);
+    part1.emissive(part_colors[part_color_id]);
     part1.normal(0, 0, 1);
     part1.vertex(-partSize/2, -partSize/2, 0, 0);
     part1.vertex(+partSize/2, -partSize/2, sprite.width, 0);
@@ -31,7 +31,7 @@
     part2.noStroke();
     part2.texture(sprite);
     part2.fill(0);
-    part2.emissive(part_color);
+    part2.emissive(part_colors[part_color_id]);
     part2.normal(0, 0, 1);
     part2.vertex(0, -partSize/2, -partSize/2, 0, 0);
     part2.vertex(0, +partSize/2, -partSize/2, sprite.width, 0);
@@ -71,11 +71,14 @@
     } 
   }
   
+  public void changeColor() {
+    part_color_id = (part_color_id+1) % part_colors.length;
+  }
 
   public void update() {
     lifespan = lifespan - 1;
     velocity.add(gravity);
-    color c = part_color;
+    color c = part_colors[part_color_id];
     part.setTint(color(red(c),green(c),blue(c),lifespan));
     part.translate(velocity.x, velocity.y, velocity.z);
   }
