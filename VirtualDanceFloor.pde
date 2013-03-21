@@ -356,6 +356,41 @@ void drawLimb(int userId,int jointType1,int jointType2)
        jointPos2.x,-jointPos2.y,jointPos2.z);
 }
 
+void drawBody(int userId) {
+  pushMatrix();
+  PVector torsoPos = new PVector();
+  PVector headPos = new PVector();
+  PVector leftHandPos = new PVector();
+  PVector rightHandPos = new PVector();
+  PVector leftFootPos = new PVector();
+  PVector rightFootPos = new PVector();
+  
+  float  confidence;
+  
+  // draw the joint position
+  context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_TORSO,torsoPos);
+  context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_HEAD,headPos);
+  context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_LEFT_HAND,leftHandPos);
+  context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_RIGHT_HAND,rightHandPos);
+  context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_LEFT_FOOT,leftFootPos);
+  context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_RIGHT_FOOT,rightFootPos);
+
+  translate(torsoPos.x, torsoPos.y, torsoPos.z);
+  sphere(50);
+  translate(headPos.x, headPos.y, headPos.z);
+  sphere(30);
+  translate(leftHandPos.x, leftHandPos.y, leftHandPos.z);
+  sphere(20);
+  translate(rightHandPos.x, rightHandPos.y, rightHandPos.z);
+  sphere(20);
+  translate(leftFootPos.x, leftFootPos.y, leftFootPos.z);
+  sphere(20);
+  translate(rightFootPos.x, rightFootPos.y, rightFootPos.z);
+  sphere(20);
+  
+  popMatrix();
+}
+
 void stop()
 {
   //Suljetaan musiikkisoittimet
@@ -527,7 +562,8 @@ void drawSkeleton(int userId)
   drawLimb(userId, SimpleOpenNI.SKEL_LEFT_SHOULDER, SimpleOpenNI.SKEL_LEFT_HIP);
   drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_HIP, SimpleOpenNI.SKEL_LEFT_HIP);
   
-
+  drawBody(userId);
+  
   popStyle();  
 }
 
