@@ -38,7 +38,8 @@ PImage sprite;
 //----------------- ELEET ---------------------
 PushDetector pushDetector;
 XnVSessionManager sessionManager;
-
+StaticGestureDetector staticGesture;
+SaturdayNightFeverDetector snfDetector;
 
 //----------------- KAMERA ---------------------
 
@@ -117,7 +118,7 @@ void initOpenNI() {
      exit();
      return;
   }
-  context.setMirror(true);
+  context.setMirror(false);
   context.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL); 
 }
 
@@ -127,6 +128,8 @@ void initGestures() {
   
   sessionManager = context.createSessionManager("Click,Wave", "RaiseHand");
   
+  snfDetector = new SaturdayNightFeverDetector();
+  staticGesture = new StaticGestureDetector();
   pushDetector = new PushDetector(this);
   sessionManager.AddListener(pushDetector);
   
@@ -199,11 +202,18 @@ void draw() {
     }
     
     //Test Saturday Night Fever -pose
-    if(saturdayNightFever()) {
+    if(snfDetector.saturdayNightFever()) {
       println("#### SaturdayNightFever ####");
       bileet = true;
     }
+   
   } else {
+    
+    if(staticGesture.detectPose()) {
+      println("#### Standing still ####");
+      bileet = false;
+    }
+    
     if(!musa) {
       efekti.rewind(); //Kelataan efekti alkuun
       efekti.play(); //Soitetaan efekti ennen musiikin alkamista
@@ -294,17 +304,18 @@ void draw() {
   //image(context.depthImage(),0,0);
   
   pushMatrix();
-  translate(0, 80, -700);
+  translate(0, 80, 300);
+  rotateY(PI);
   scale(0.18);
   
-  // draw the skeleton if it's available
+  // draw the skeletons if available
   int[] userList = context.getUsers();
   for(int i=0;i<userList.length;i++)
   {
     if(context.isTrackingSkeleton(userList[i])) {
       context.getJointPositionSkeleton(userList[i], SimpleOpenNI.SKEL_RIGHT_HAND, handPos);
       context.getJointPositionSkeleton(userList[i], SimpleOpenNI.SKEL_LEFT_HAND, handPos2);
-      //println(handPos.x + " " + handPos.y + " " + handPos.z);
+      
       drawSkeleton(userList[i]);
        
       ps.setEmitter(handPos.x, -handPos.y, handPos.z);
