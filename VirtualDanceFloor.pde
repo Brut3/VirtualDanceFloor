@@ -1,7 +1,4 @@
 
-//Olkkarissa voi liikkua hiiren ja nappaimiston avulla. Jos aika rupeaa kaymaan pitkaksi
-//kannattaa paina b-nappainta. 
-
 import saito.objloader.*;
 import java.util.Random;
 import ddf.minim.*;
